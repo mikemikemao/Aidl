@@ -1,0 +1,2 @@
+include ':NdkBinderService', ':JavaBinderClient', ':JavaBinderService',  ':Common'
+rootProject.name = "AndroidNdkBinderExamples"
