@@ -1,2 +1,11 @@
-package com.hikvision;public class HiAcs {
+package com.hikvision;
+
+import android.os.IBinder;
+
+public class HiAcs {
+    static {
+        System.loadLibrary("hiacs");
+    }
+
+    public native IBinder createServiceBinder();
 }

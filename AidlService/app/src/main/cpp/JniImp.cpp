@@ -4,139 +4,18 @@
 #include <android/binder_ibinder.h>
 #include "jni.h"
 #include "utils/LogUtil.h"
+#include "MyService.h"
 
-
-#define NATIVE_TEST_CLASS_NAME "com/hik/common/HiAcs"
-#include <aidl/com/example/IMyService.h>
+#include <aidl/com/hikvision/aidlservice/IMyAidlInterface.h>
 #include <android/binder_ibinder_jni.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+using aidl::com::hikvision::aidlservice::MyService;
 using namespace std;
 
-std::shared_ptr<aidl::com::example::IMyService> g_spMyService;
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_hik_common_HiAcs_onServiceConnected(
+extern "C" JNIEXPORT jobject JNICALL
+Java_com_hikvision_HiAcs_createServiceBinder(
         JNIEnv* env,
-        jobject /* this */,
-        jobject binder)
+        jobject /* this */)
 {
-    AIBinder* pBinder = AIBinder_fromJavaBinder(env, binder);
-
-    const ::ndk::SpAIBinder spBinder(pBinder);
-    g_spMyService = aidl::com::example::IMyService::fromBinder(spBinder);
-
-    LOGCATD("[App] [cpp] onServiceConnected");
-}
-
-
-/*
-  * Class:     com_hikvision_jni_MyCam
-  * Method:    startPreview
-  * Signature: (Landroid/view/SurfaceHolder;)V
-  */
-JNIEXPORT void JNICALL helloWorld(JNIEnv *env, jobject instance)
-{
-    LOGCATE("helloWorld");
-}
-
-/*
-  * Class:     com_hikvision_jni_MyCam
-  * Method:    startPreview
-  * Signature: (Landroid/view/SurfaceHolder;)V
-  */
-JNIEXPORT void JNICALL onServiceConnected(JNIEnv *env, jobject instance)
-{
-    LOGCATE("onServiceConnected");
-}
-
-
-/*
-  * Class:     com_hikvision_jni_MyCam
-  * Method:    startPreview
-  * Signature: (Landroid/view/SurfaceHolder;)V
-  */
-JNIEXPORT void JNICALL onServiceDisconnected(JNIEnv *env, jobject instance)
-{
-    LOGCATE("onServiceDisconnected");
-}
-
-
-#ifdef __cplusplus
-}
-#endif
-
-//视频预览相关
-static JNINativeMethod g_RenderMethods[] = {
-        {"native_helloWorld",                       "()V",                             (void *)(helloWorld)},
-       // {"native_onServiceConnected",               "()V",                             (void *)(onServiceConnected)},
-       // {"native_onServiceDisconnected",            "()V",                             (void *)(onServiceDisconnected)},
-
-};
-
-
-static int RegisterNativeMethods(JNIEnv *env, const char *className, JNINativeMethod *methods, int methodNum)
-{
-    LOGCATE("RegisterNativeMethods");
-    jclass clazz = env->FindClass(className);
-    if (clazz == NULL)
-    {
-        LOGCATE("RegisterNativeMethods fail. clazz == NULL");
-        return JNI_FALSE;
-    }
-    if (env->RegisterNatives(clazz, methods, methodNum) < 0)
-    {
-        LOGCATE("RegisterNativeMethods fail");
-        return JNI_FALSE;
-    }
-    return JNI_TRUE;
-}
-
-static void UnregisterNativeMethods(JNIEnv *env, const char *className)
-{
-    LOGCATE("UnregisterNativeMethods");
-    jclass clazz = env->FindClass(className);
-    if (clazz == NULL)
-    {
-        LOGCATE("UnregisterNativeMethods fail. clazz == NULL");
-        return;
-    }
-    if (env != NULL)
-    {
-        env->UnregisterNatives(clazz);
-    }
-}
-
-// call this func when loading lib
-extern "C" jint JNI_OnLoad(JavaVM *jvm, void *p)
-{
-    LOGCATE("===== JNI_OnLoad =====");
-    jint jniRet = JNI_ERR;
-    JNIEnv *env = NULL;
-    if (jvm->GetEnv((void **) (&env), JNI_VERSION_1_6) != JNI_OK)
-    {
-        return jniRet;
-    }
-    //视频预览相关操作
-    jint regRet = RegisterNativeMethods(env, NATIVE_TEST_CLASS_NAME, g_RenderMethods,
-                                        sizeof(g_RenderMethods) /
-                                        sizeof(g_RenderMethods[0]));
-    if (regRet != JNI_TRUE)
-    {
-        return JNI_ERR;
-    }
-
-    return JNI_VERSION_1_6;
-}
-
-extern "C" void JNI_OnUnload(JavaVM *jvm, void *p)
-{
-    JNIEnv *env = NULL;
-    if (jvm->GetEnv((void **) (&env), JNI_VERSION_1_6) != JNI_OK)
-    {
-        return;
-    }
-    UnregisterNativeMethods(env, NATIVE_TEST_CLASS_NAME);
+    static MyService myService;
+    return env->NewGlobalRef(AIBinder_toJavaBinder(env, myService.asBinder().get()));
 }

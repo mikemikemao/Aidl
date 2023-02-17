@@ -8,10 +8,9 @@ set(libname hiacs)
 
 include_directories(
         ${CMAKE_SOURCE_DIR}/
-        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/includes
         ${CMAKE_SOURCE_DIR}/utils
         ${CMAKE_SOURCE_DIR}/ipc
-        ${common_inc_dir}
 )
 
 link_directories(
@@ -22,7 +21,7 @@ file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/*.cpp
         ${CMAKE_SOURCE_DIR}/utils/*.cpp
         ${CMAKE_SOURCE_DIR}/ipc/*.cpp
-        ${aidl_src_dir}/com/example/IMyService.cpp
+        ${CMAKE_SOURCE_DIR}/aidl/com/hikvision/aidlservice/*.cpp
         )
 
 add_library( # Sets the name of the library.

@@ -1,27 +1,23 @@
 #pragma once
 
-#include <aidl/com/example/BnMyService.h>
+#include <aidl/com/hikvision/aidlservice/BnMyAidlInterface.h>
 
-using aidl::com::example::ComplexType;
 using ndk::ScopedAStatus;
 
 namespace aidl {
 namespace com {
-namespace example {
+namespace hikvision {
+namespace aidlservice {
 
-class MyService : public BnMyService
+class MyService : public BnMyAidlInterface
 {
 public:
-    ScopedAStatus basicTypes(int32_t in_anInt, int64_t in_aLong, bool in_aBoolean,
-            float in_aFloat, double in_aDouble, const std::string& in_aString) override;
-
-    ScopedAStatus complexType(const ComplexType& in_aComplexObject, std::string* _aidl_return) override;
-
-    ScopedAStatus returnComplexType(int32_t in_anInt, int64_t in_aLong, bool in_aBoolean,
-            float in_aFloat, double in_aDouble, const std::string& in_aString,
-            ComplexType* _aidl_return) override;
+    ScopedAStatus add(int32_t in_num1, int32_t in_num2, int32_t* _aidl_return) override;
+    ScopedAStatus getNum(int32_t* _aidl_return) override;
+    ScopedAStatus minus(int32_t in_num1, int32_t in_num2, int32_t* _aidl_return) override;
 };
 
 } // namespace example
 } // namespace com
 } // namespace aidl
+}
