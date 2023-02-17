@@ -7,30 +7,27 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.ConditionVariable;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.hikvision.HiAcs;
 import com.hikvision.aidlservice.IMyAidlInterface;
 
 public class MainActivity extends AppCompatActivity implements ServiceConnection{
     private static final String TAG = "MainActivity";
-    private IMyAidlInterface iMyAidlInterface;
-    private ServiceConnection serviceConnection;
-    private Button btAdd, btMinus, btGet;
+    private volatile boolean mIsServiceConnected = false;
+    private final ConditionVariable mServiceConnectionWaitLock = new ConditionVariable();
+    private Button btTest;
+    HiAcs hiAcs;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-//        try {
-//            int res = iMyAidlInterface.add(2, 2);
-//            Log.d(TAG, "add: " + res);	//add:4
-//        } catch (RemoteException e) {
-//            e.printStackTrace();
-//        }
+        hiAcs = new HiAcs();
     }
 
     protected void onResume() {
@@ -41,33 +38,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
 
     private void initView() {
-        btAdd = findViewById(R.id.add);
-        btMinus = findViewById(R.id.min);
+        btTest = findViewById(R.id.test);
 
-
-        btAdd.setOnClickListener(new View.OnClickListener() {
+        btTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    int res = iMyAidlInterface.add(2, 2);
-                    Log.d(TAG, "add: " + res);	//add:4
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                hiAcs.operation(1);
             }
         });
-        btMinus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    int res = iMyAidlInterface.minus(9, 2);
-                    Log.d(TAG, "minus: " + res); //minus:7
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
     }
 
     /**
@@ -78,23 +56,58 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         intent.setClassName("com.hikvision.aidlservice","com.hikvision.aidlservice.MyService");
         boolean ret = bindService(intent, this, Context.BIND_AUTO_CREATE);
         Log.d(TAG, "bindService: ret = "+ ret);
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                runOnUiThread(new SetTextRunnable("Waiting to talk to IMyService..."));
+                // Not connected to service yet?
+                while(!mIsServiceConnected)
+                {
+                    mServiceConnectionWaitLock.block(); // waits for service connection
+                }
+
+                runOnUiThread(new SetTextRunnable("Talked to IMyService. Returned : .............." ));
+            }
+        }).start();
+    }
+
+    private class SetTextRunnable implements Runnable
+    {
+        final String mText;
+
+        SetTextRunnable(String text)
+        {
+            mText = text;
+        }
+
+        @Override
+        public void run()
+        {
+            Log.d(TAG, mText);
+        }
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "[App] [java] onServiceConnected");
+        hiAcs.onServiceConnected(service);
+        mIsServiceConnected = true;
+        mServiceConnectionWaitLock.open(); // breaks service connection waits
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        mIsServiceConnected = false;
+        hiAcs.onServiceDisconnected();
+        Log.d(TAG, "[App] [java] onServiceDisconnected");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(serviceConnection);
-    }
-
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        Log.d(TAG, "onServiceConnected: ");
-        iMyAidlInterface = IMyAidlInterface.Stub.asInterface(service);
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        Log.d(TAG, "onServiceDisconnected: ");
-        iMyAidlInterface = null;
+        mIsServiceConnected = false;
+        hiAcs.onServiceDisconnected();
     }
 }
