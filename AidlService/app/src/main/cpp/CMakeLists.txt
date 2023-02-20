@@ -8,10 +8,12 @@ set(libname hiacs)
 
 include_directories(
         ${CMAKE_SOURCE_DIR}/
-        ${CMAKE_SOURCE_DIR}/includes
+        ${common_inc_dir}
         ${CMAKE_SOURCE_DIR}/utils
         ${CMAKE_SOURCE_DIR}/ipc
 )
+
+message("1.common_inc_dir = ${common_inc_dir}")
 
 link_directories(
         ${jnilibs}/${ANDROID_ABI}
@@ -21,7 +23,7 @@ file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/*.cpp
         ${CMAKE_SOURCE_DIR}/utils/*.cpp
         ${CMAKE_SOURCE_DIR}/ipc/*.cpp
-        ${CMAKE_SOURCE_DIR}/aidl/com/hikvision/aidlservice/*.cpp
+        ${aidl_src_dir}/com/hikvision/aidlservice/*.cpp
         )
 
 add_library( # Sets the name of the library.

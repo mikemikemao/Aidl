@@ -1,2 +1,3 @@
 rootProject.name = "AidlService"
 include ':app'
+include ':common'
