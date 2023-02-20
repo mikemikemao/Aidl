@@ -7,9 +7,10 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.hikvision.HiAcs;
+import com.hikvision.common.Common;
 
 public class MyService extends Service {
-    private static final String TAG = "MyService";
+    private static final String TAG = Common.LOG_TAG;
     private IBinder mBinder;
     HiAcs hiAcs;
 
